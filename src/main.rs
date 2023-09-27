@@ -1,3 +1,5 @@
+use std::env;
+use std::net::SocketAddr;
 use std::str::FromStr;
 use hyper::http::HeaderValue;
 use hyper::service::{make_service_fn, service_fn};
@@ -5,13 +7,12 @@ use hyper::{Body, Request, Response, Server, StatusCode, Client, HeaderMap, Meth
 use hyper::http::uri::{Authority, Scheme};
 use hyper_tls::HttpsConnector;
 
-
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
 
 async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
-    let Some(destination_header) = req.headers_mut().remove("x-destination") else {
-        return Ok(validation_error("can i hav some of that x-destination header, pwease? 🥺", None));
+    let Some(destination_header) = req.headers_mut().remove("silly-host") else {
+        return Ok(validation_error("can i hav some of that Silly-host header, pwease? 🥺", None));
     };
 
     let Some(origin) = req.headers().get("Origin") else {
@@ -21,7 +22,7 @@ async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
     let origin = origin.clone();
 
     let Ok(authority) = Authority::from_str(destination_header.to_str().unwrap()) else {
-        return Ok(validation_error("your x-destination header looks like an invalid domain 🥺", Some(&origin)))
+        return Ok(validation_error("your Silly-host header looks like an invalid domain 🥺", Some(&origin)))
     };
 
     let mut uri_parts = req.uri().clone().into_parts();
@@ -101,7 +102,12 @@ pub async fn main() -> Result<()> {
         async { Ok::<_, GenericError>(service_fn(route)) }
     });
 
-    let addr = ([127, 0, 0, 1], 3001).into();
+    let port_env: u16 = match env::var("PORT")  {
+        Ok(value) => value.parse().expect("PORT env variable must be an integer value."),
+        _ => 3001
+    };
+
+    let addr = ([0, 0, 0, 0], port_env).into();
 
     let server = Server::bind(&addr).serve(make_svc);
 
