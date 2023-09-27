@@ -1,0 +1,11 @@
+[package]
+name = "silly-cors"
+version = "0.1.0"
+authors = ["dubzer"]
+repository = "https://github.com/dubzer/silly-cors"
+edition = "2021"
+
+[dependencies]
+hyper = { version = "0.14.21", features = ["full"] }
+hyper-tls = "0.5.0"
+tokio = { version = "1", features = ["full"] }
