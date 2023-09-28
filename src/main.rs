@@ -1,14 +1,21 @@
 use std::env;
-use std::net::SocketAddr;
 use std::str::FromStr;
 use hyper::http::HeaderValue;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server, StatusCode, Client, HeaderMap, Method, Uri};
 use hyper::http::uri::{Authority, Scheme};
 use hyper_tls::HttpsConnector;
+use once_cell::sync::Lazy;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
+
+static SECRET: Lazy<Option<String>> = Lazy::new(|| {
+    match env::var("SECRET") {
+        Ok(val) => Some(val),
+        _ => None
+    }
+});
 
 async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
     let Some(destination_header) = req.headers_mut().remove("silly-host") else {
