@@ -10,12 +10,7 @@ use once_cell::sync::Lazy;
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 type Result<T> = std::result::Result<T, GenericError>;
 
-static SECRET: Lazy<Option<String>> = Lazy::new(|| {
-    match env::var("SECRET") {
-        Ok(val) => Some(val),
-        _ => None
-    }
-});
+static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
 
 async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
     let Some(destination_header) = req.headers_mut().remove("silly-host") else {
@@ -29,7 +24,7 @@ async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
     let origin = origin.clone();
 
     let Ok(authority) = Authority::from_str(destination_header.to_str().unwrap()) else {
-        return Ok(validation_error("your Silly-host header looks like an invalid domain 🥺", Some(&origin)))
+        return Ok(validation_error("your Silly-host header looks like an invalid d  omain 🥺", Some(&origin)))
     };
 
     let mut uri_parts = req.uri().clone().into_parts();
