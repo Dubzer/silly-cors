@@ -1,7 +1,8 @@
 use std::str::FromStr;
-use hyper::http::uri::{Authority, Scheme};
+
 use hyper::{Body, Client, Request, Response, StatusCode, Uri};
 use hyper::header::HeaderValue;
+use hyper::http::uri::{Authority, Scheme};
 use hyper_tls::HttpsConnector;
 
 use crate::get_default_cors;
@@ -50,5 +51,5 @@ pub async fn handle_options(req: Request<Body>) -> Result<Response<Body>> {
     headers.insert("Access-Control-Allow-Headers", HeaderValue::from_static("*"));
 
     response.headers_mut().unwrap().extend(headers);
-    return Ok(response.body(Body::empty()).unwrap())
+    return Ok(response.body(Body::empty()).unwrap());
 }

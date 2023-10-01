@@ -1,15 +1,18 @@
+use std::env;
+
+use hyper::{Body, HeaderMap, Method, Request, Response, Server, StatusCode};
+use hyper::http::HeaderValue;
+use hyper::service::{make_service_fn, service_fn};
+use once_cell::sync::Lazy;
+
+use crate::handler_error::HandlerError;
+use crate::handlers::{handle, handle_options};
+use crate::types::{GenericError, Result};
+
 mod handler_error;
 mod types;
 mod handlers;
 
-use std::env;
-use hyper::http::HeaderValue;
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Request, Response, Server, StatusCode, HeaderMap, Method};
-use once_cell::sync::Lazy;
-use crate::handler_error::HandlerError;
-use crate::types::{GenericError, Result};
-use crate::handlers::{handle, handle_options};
 static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
 
 async fn cors_router(req: Request<Body>) -> Result<Response<Body>> {
@@ -37,8 +40,8 @@ async fn cors_router(req: Request<Body>) -> Result<Response<Body>> {
             Ok(err) => {
                 let mut response = Response::builder().status(err.code);
                 if let Some(origin) = err.origin {
-                    let headers = get_default_cors(origin);    
-                    response.headers_mut().unwrap().extend(headers);    
+                    let headers = get_default_cors(origin);
+                    response.headers_mut().unwrap().extend(headers);
                 }
 
                 response.body(Body::from(format!("Silly error: {}", err.message))).unwrap()
@@ -73,7 +76,7 @@ pub async fn main() -> Result<()> {
         async { Ok::<_, GenericError>(service_fn(cors_router)) }
     });
 
-    let port_env: u16 = match env::var("PORT")  {
+    let port_env: u16 = match env::var("PORT") {
         Ok(value) => value.parse().expect("PORT env variable must be an integer value."),
         _ => 3001
     };

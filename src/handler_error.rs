@@ -1,4 +1,5 @@
 use std::fmt::Display;
+
 use hyper::{http::HeaderValue, StatusCode};
 use thiserror::Error;
 
