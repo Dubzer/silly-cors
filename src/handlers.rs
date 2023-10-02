@@ -4,10 +4,16 @@ use hyper::{Body, Client, Request, Response, StatusCode, Uri};
 use hyper::header::HeaderValue;
 use hyper::http::uri::{Authority, Scheme};
 use hyper_tls::HttpsConnector;
+use once_cell::sync::Lazy;
 
 use crate::get_default_cors;
 use crate::handler_error::HandlerError;
 use crate::types::Result;
+
+// The global client is used to take advantage of the TCP connection pool that's implemented in Hyper
+static GLOBAL_CLIENT: Lazy<Client<HttpsConnector<hyper::client::HttpConnector>>> = Lazy::new(|| 
+    Client::builder()
+    .build(HttpsConnector::new()));
 
 pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
     let destination_header = req.headers_mut().remove("silly-host")
@@ -23,8 +29,7 @@ pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Respo
     req.headers_mut().insert("Host", destination_header);
     *req.uri_mut() = Uri::from_parts(uri_parts)?;
 
-    let client = Client::builder().build(HttpsConnector::new());
-    let client_response = client.request(req).await
+    let client_response = GLOBAL_CLIENT.request(req).await
         .map_err(|err| HandlerError::new_with_origin(format!("oops, couldn't connect to destination :(\n{}", err), StatusCode::INTERNAL_SERVER_ERROR, origin.clone()))?;
 
     let (mut parts, body) = client_response.into_parts();
