@@ -9,10 +9,7 @@ use crate::get_default_cors;
 use crate::handler_error::HandlerError;
 use crate::types::Result;
 
-pub async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
-    let origin = req.headers().get("Origin")
-        .ok_or(HandlerError::new("can i hav some of that origin header, pwease? 🥺", StatusCode::BAD_REQUEST))?.clone();
-
+pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
     let destination_header = req.headers_mut().remove("silly-host")
         .ok_or(HandlerError::new_with_origin("can i hav some of that Silly-host header, pwease? 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
 
@@ -36,15 +33,7 @@ pub async fn handle(mut req: Request<Body>) -> Result<Response<Body>> {
     return Ok(Response::from_parts(parts, body));
 }
 
-pub async fn handle_options(req: Request<Body>) -> Result<Response<Body>> {
-    let Some(origin) = req.headers().get("origin") else {
-        let response = Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .body(Body::empty()).unwrap();
-
-        return Ok(response);
-    };
-
+pub async fn handle_options(origin: HeaderValue) -> Result<Response<Body>> {
     let mut response = Response::builder().status(StatusCode::OK);
 
     let mut headers = get_default_cors(origin.clone());
