@@ -5,7 +5,6 @@ COPY . .
 COPY scripts/build-doker.sh ./script.sh
 
 ARG TARGETARCH
-
 RUN dpkg --add-architecture "${TARGETARCH}"
 RUN apt-get update && \
     apt-get install -y \
@@ -13,9 +12,14 @@ RUN apt-get update && \
     pkg-config \
     libssl-dev:"${TARGETARCH}"
 
-RUN sh script.sh
+RUN bash script.sh
 
-FROM gcr.io/distroless/cc as final
-COPY --from=build /output/silly-cors /app
+
+FROM debian:bookworm-slim as final
+RUN apt update && apt upgrade -y && \
+    apt install openssl -y && \
+    apt clean
+
+COPY --from=build /output/silly-cors /app/silly-cors
 
 ENTRYPOINT [ "/app/silly-cors" ]

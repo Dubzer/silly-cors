@@ -1,4 +1,5 @@
 #!/bin/sh
+
 case "${TARGETARCH}" in
 "amd64")
     LINKER_NAME="x86_64-linux-gnu-gcc"
