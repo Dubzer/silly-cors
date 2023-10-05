@@ -41,3 +41,4 @@ jobs:
           platforms: linux/amd64, linux/arm64
           tags: ghcr.io/${{ steps.string.outputs.lowercase }}:${{inputs.versionName}}
           push: true
+          provenance: false
