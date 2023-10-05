@@ -15,10 +15,16 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Repository name to lowercase
+        id: string
+        uses: ASzc/change-string-case-action@v5
+        with:
+          string: ${{ github.repository }}
+
       - name: Build Docker images
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64, linux/arm64
-          tags: ghcr.io/${{ github.repository }}:${{inputs.versionName}}
+          tags: ghcr.io/${{ steps.string.outputs.lowercase }}:${{inputs.versionName}}
           push: true
