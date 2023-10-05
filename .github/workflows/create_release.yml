@@ -9,7 +9,7 @@ on:
 
 jobs:
   create_release: 
-    name: Publish Docker image
+    name: Do the thing
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,7 +43,7 @@ jobs:
           push: true
           provenance: false
     
-      - name: Initialize mandatory git config
+      - name: Initialize git config
         run: |
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
