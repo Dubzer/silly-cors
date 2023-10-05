@@ -39,7 +39,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64, linux/arm64
-          tags: ghcr.io/${{ steps.string.outputs.lowercase }}:${{inputs.versionName}}
+          tags: ghcr.io/${{ steps.string.outputs.lowercase }}:${{inputs.versionName}}, ghcr.io/${{ steps.string.outputs.lowercase }}:latest
           push: true
           provenance: false
     
