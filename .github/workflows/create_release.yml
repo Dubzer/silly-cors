@@ -12,6 +12,7 @@ jobs:
     name: Publish Docker image
     runs-on: ubuntu-latest
     permissions:
+      contents: write
       packages: write
     steps:
       - name: Repository name to lowercase
