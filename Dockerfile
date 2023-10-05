@@ -1,25 +1,22 @@
-FROM --platform="${BUILDPLATFORM}" rust:1.72.1-slim as build
+ARG RUST_VERSION=1.72.1
+
+FROM --platform=${BUILDPLATFORM} blackdex/rust-musl:aarch64-musl-stable-${RUST_VERSION}-openssl3 as build-arm64
+FROM --platform=${BUILDPLATFORM} blackdex/rust-musl:x86_64-musl-stable-${RUST_VERSION}-openssl3 as build-amd64
+
+FROM build-${TARGETARCH} as build
 WORKDIR /src
-
 COPY . .
-COPY scripts/build-doker.sh ./script.sh
+RUN cargo build --release
 
-ARG TARGETARCH
-RUN dpkg --add-architecture "${TARGETARCH}"
-RUN apt-get update && \
-    apt-get install -y \
-    make \
-    pkg-config \
-    libssl-dev:"${TARGETARCH}"
-
-RUN bash script.sh
+RUN mkdir /output && \
+    cd ./target && \
+    mv ./$(ls -d */|grep musl)/release/silly-cors /output
 
 
-FROM debian:bookworm-slim as final
-RUN apt update && apt upgrade -y && \
-    apt install openssl -y && \
-    apt clean
+FROM scratch
+WORKDIR /app
+COPY --from=build /output/silly-cors .
 
-COPY --from=build /output/silly-cors /app/silly-cors
+CMD ["/app/silly-cors"]
 
-ENTRYPOINT [ "/app/silly-cors" ]
+EXPOSE 3001
