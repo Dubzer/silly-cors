@@ -42,13 +42,13 @@ Everything related to the proxy starts with **Silly**.
 #### Handling errors
 It's important to properly handle any unexpected scenarios.
 
-All error responses will have `Silly-Response=true` header in them. So you can check for it, and for example, log an error.
+All errors from Silly CORS will have `Silly-Response=true` header in them. So you can check for it, and for example, log an error.
 
 #### Usage example
 Let's imagine we've started to get tired from all this sillines and want to reduce its amount by calling HTTP method **DELETE** on `https://api.service.example/cats/1`.
 
 
-To do this, change the URL host to cors-proxy deployment. In this example, Silly CORS is deployed on `https://silly-cors.deployment`. Then, place a real host in the `Silly-Host` header. 
+To do this, change the URL host to one where Silly CORS is deployed. In this example, it's `https://silly-cors.deployment`. Then, place a real host in the `Silly-Host` header. 
 
 After awaiting a promise, we make sure that no errors has occured in Silly CORS by checking the header `Silly-Response`.
 
