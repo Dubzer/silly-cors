@@ -1,7 +1,7 @@
 ARG RUST_VERSION=1.72.1
 
-FROM --platform=${BUILDPLATFORM} blackdex/rust-musl:aarch64-musl-stable-${RUST_VERSION}-openssl3 as build-arm64
-FROM --platform=${BUILDPLATFORM} blackdex/rust-musl:x86_64-musl-stable-${RUST_VERSION}-openssl3 as build-amd64
+FROM --platform=${BUILDPLATFORM} ghcr.io/blackdex/rust-musl:aarch64-musl-stable-${RUST_VERSION}-openssl3 as build-arm64
+FROM --platform=${BUILDPLATFORM} ghcr.io/blackdex/rust-musl:x86_64-musl-stable-${RUST_VERSION}-openssl3 as build-amd64
 
 FROM build-${TARGETARCH} as build
 WORKDIR /src
