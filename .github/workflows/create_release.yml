@@ -1,3 +1,5 @@
+name: Release - tag and publish Docker image
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,7 +9,6 @@ on:
 
 jobs:
   create_release: 
-    name: Create release and Docker image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
