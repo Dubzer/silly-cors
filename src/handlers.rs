@@ -17,15 +17,15 @@ static GLOBAL_CLIENT: Lazy<Client<HttpsConnector<hyper::client::HttpConnector>>>
 pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
     let path = req.uri().path_and_query()
         .ok_or_else(|| Box::new(HandlerError::new_with_origin(
-            "sowwy, you seem to have forgotten to pass the path 🥺", StatusCode::BAD_REQUEST, origin.clone())))?;
+            "sowwy, you seem to have fowgotten to pass the path 🥺", StatusCode::BAD_REQUEST, origin.clone())))?;
     
     let path = &path.as_str()[1..];
 
     let destination_uri = Uri::from_str(path)
-        .map_err(|_| HandlerError::new_with_origin("sowwy, your destination path seems invalid 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
+        .map_err(|_| HandlerError::new_with_origin("sowwy, youw destination path seems invalid 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
 
     let destination_host = destination_uri.authority()
-        .ok_or_else(|| HandlerError::new_with_origin("sowwy, you might forgot host in your destination", StatusCode::BAD_REQUEST, origin.clone()))?;
+        .ok_or_else(|| HandlerError::new_with_origin("sowwy, you might have fowgotten host in your destination", StatusCode::BAD_REQUEST, origin.clone()))?;
 
 
     req.headers_mut().insert("Host", HeaderValue::from_str(destination_host.as_str()).unwrap());
