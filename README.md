@@ -55,7 +55,6 @@ After awaiting a promise, we make sure that no errors has occured in Silly CORS 
 const url = "https://silly-cors.deployment/" + "https://api.service.example/cats/1";
 const response = await fetch(url, {
     method: "DELETE", 
-    headers: {"Silly-Host": "api.service.example"}
 });
 
 if (result.headers.get("Silly-Response")) {
