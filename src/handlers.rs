@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use hyper::{Body, Client, Request, Response, StatusCode, Uri};
 use hyper::header::HeaderValue;
-use hyper::http::uri::{Authority, Scheme};
 use hyper_tls::HttpsConnector;
 use once_cell::sync::Lazy;
 
@@ -16,21 +15,25 @@ static GLOBAL_CLIENT: Lazy<Client<HttpsConnector<hyper::client::HttpConnector>>>
     .build(HttpsConnector::new()));
 
 pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
-    let destination_header = req.headers_mut().remove("silly-host")
-        .ok_or(HandlerError::new_with_origin("can i hav some of that Silly-host header, pwease? 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
+    let path = req.uri().path_and_query()
+        .ok_or_else(|| Box::new(HandlerError::new_with_origin(
+            "sowwy, you seem to have forgotten to pass the path 🥺", StatusCode::BAD_REQUEST, origin.clone())))?;
+    
+    let path = &path.as_str()[1..];
 
-    let authority = Authority::from_str(destination_header.to_str().unwrap())
-        .map_err(|_| HandlerError::new_with_origin("your Silly-host header looks like an invalid domain 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
+    let destination_uri = Uri::from_str(path)
+        .map_err(|_| HandlerError::new_with_origin("sowwy, your destination path seems invalid 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
 
-    let mut uri_parts = req.uri().clone().into_parts();
-    uri_parts.authority = Some(authority);
-    uri_parts.scheme = Some(Scheme::HTTPS);
+    let destination_host = destination_uri.authority()
+        .ok_or_else(|| HandlerError::new_with_origin("sowwy, you might forgot host in your destination", StatusCode::BAD_REQUEST, origin.clone()))?;
 
-    req.headers_mut().insert("Host", destination_header);
-    *req.uri_mut() = Uri::from_parts(uri_parts)?;
+
+    req.headers_mut().insert("Host", HeaderValue::from_str(destination_host.as_str()).unwrap());
+    *req.uri_mut() = destination_uri;
 
     let client_response = GLOBAL_CLIENT.request(req).await
-        .map_err(|err| HandlerError::new_with_origin(format!("oops, couldn't connect to destination :(\n{}", err), StatusCode::INTERNAL_SERVER_ERROR, origin.clone()))?;
+        .map_err(|err| HandlerError::new_with_origin(
+            format!("oops, couldn't connect to destination :(\n{}", err), StatusCode::INTERNAL_SERVER_ERROR, origin.clone()))?;
 
     let (mut parts, body) = client_response.into_parts();
     parts.headers.extend(get_default_cors(origin.clone()));

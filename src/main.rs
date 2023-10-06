@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 use std::env;
 
 use hyper::{Body, HeaderMap, Method, Request, Response, Server, StatusCode};
