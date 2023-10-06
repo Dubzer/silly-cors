@@ -31,9 +31,18 @@ async fn cors_router(mut req: Request<Body>) -> Result<Response<Body>> {
         };
 
         let secret = req.headers_mut().remove("silly-secret");
-        if secret.is_none() && SECRET.is_some() {
-            break 'r Err(Box::new(HandlerError::new_with_origin("sowwy, but you need a Silly-secret", StatusCode::UNAUTHORIZED, origin.clone())));
-        }
+
+        match (SECRET.as_ref(), secret) {
+            (Some(_), None) => 
+                break 'r Err(Box::new(HandlerError::new_with_origin(
+                    "sowwy, but you need a Silly-Secret header 🥺", StatusCode::UNAUTHORIZED, origin.clone()))),
+            (Some(x), Some(y)) => if y == x {
+                break 'r Err(Box::new(HandlerError::new_with_origin(
+                    "sowwy, but you need to know the Silly-Secret to do silly stuff with Silly CORS 🥺", 
+                    StatusCode::UNAUTHORIZED, origin.clone())))
+            },
+            _ => ()
+        };
 
         match (req.method(), req.uri().path()) {
             (&Method::OPTIONS, _) => handle_options(origin).await,
