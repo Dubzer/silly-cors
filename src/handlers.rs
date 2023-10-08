@@ -1,3 +1,4 @@
+use std::env;
 use std::str::FromStr;
 
 use hyper::{Body, Client, Request, Response, StatusCode, Uri};
@@ -14,13 +15,29 @@ static GLOBAL_CLIENT: Lazy<Client<HttpsConnector<hyper::client::HttpConnector>>>
     Client::builder()
     .build(HttpsConnector::new()));
 
+    static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
+
 pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
+    let secret = req.headers_mut().remove("silly-secret");
+
+    match (SECRET.as_ref(), secret) {
+        (Some(_), None) => 
+            return Err(Box::new(HandlerError::new_with_origin(
+                "sowwy, but you need a Silly-Secret header 🥺", StatusCode::UNAUTHORIZED, origin.clone()))),
+        (Some(x), Some(y)) => if y == x {
+            return Err(Box::new(HandlerError::new_with_origin(
+                "sowwy, but you need to know the Silly-Secret to do silly stuff with Silly CORS 🥺", 
+                StatusCode::UNAUTHORIZED, origin.clone())))
+        },
+        _ => ()
+    };
+
     let path = req.uri().path_and_query()
         .ok_or_else(|| Box::new(HandlerError::new_with_origin(
             "sowwy, you seem to have fowgotten to pass the path 🥺", StatusCode::BAD_REQUEST, origin.clone())))?;
     
     let path = &path.as_str()[1..];
-
+    
     let destination_uri = Uri::from_str(path)
         .map_err(|_| HandlerError::new_with_origin("sowwy, youw destination path seems invalid 🥺", StatusCode::BAD_REQUEST, origin.clone()))?;
 

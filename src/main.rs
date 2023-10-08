@@ -15,7 +15,6 @@ mod handler_error;
 mod types;
 mod handlers;
 
-static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
 static COMMON_ERROR_HEADERS: Lazy<HeaderMap<HeaderValue>> = Lazy::new(|| {
     let mut header_map = HeaderMap::new();
     header_map.append("content-type", HeaderValue::from_static("text/plain; charset=utf-8"));
@@ -30,20 +29,6 @@ async fn cors_router(mut req: Request<Body>) -> Result<Response<Body>> {
     let result: Result<Response<Body>> = 'r: {
         let Some(origin) = req.headers_mut().remove("origin") else {
             break 'r Err(Box::new(HandlerError::new("can i hav some of that Origin header, pwease? 🥺", StatusCode::BAD_REQUEST)));
-        };
-
-        let secret = req.headers_mut().remove("silly-secret");
-
-        match (SECRET.as_ref(), secret) {
-            (Some(_), None) => 
-                break 'r Err(Box::new(HandlerError::new_with_origin(
-                    "sowwy, but you need a Silly-Secret header 🥺", StatusCode::UNAUTHORIZED, origin.clone()))),
-            (Some(x), Some(y)) => if y == x {
-                break 'r Err(Box::new(HandlerError::new_with_origin(
-                    "sowwy, but you need to know the Silly-Secret to do silly stuff with Silly CORS 🥺", 
-                    StatusCode::UNAUTHORIZED, origin.clone())))
-            },
-            _ => ()
         };
 
         match (req.method(), req.uri().path()) {
