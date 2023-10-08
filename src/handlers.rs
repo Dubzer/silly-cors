@@ -15,7 +15,7 @@ static GLOBAL_CLIENT: Lazy<Client<HttpsConnector<hyper::client::HttpConnector>>>
     Client::builder()
     .build(HttpsConnector::new()));
 
-    static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
+static SECRET: Lazy<Option<String>> = Lazy::new(|| env::var("SECRET").ok());
 
 pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Response<Body>> {
     let secret = req.headers_mut().remove("silly-secret");
@@ -24,7 +24,7 @@ pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Respo
         (Some(_), None) => 
             return Err(Box::new(HandlerError::new_with_origin(
                 "sowwy, but you need a Silly-Secret header 🥺", StatusCode::UNAUTHORIZED, origin.clone()))),
-        (Some(x), Some(y)) => if y == x {
+        (Some(x), Some(y)) => if y != x {
             return Err(Box::new(HandlerError::new_with_origin(
                 "sowwy, but you need to know the Silly-Secret to do silly stuff with Silly CORS 🥺", 
                 StatusCode::UNAUTHORIZED, origin.clone())))
