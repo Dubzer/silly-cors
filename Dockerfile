@@ -13,7 +13,7 @@ RUN mkdir /output && \
     mv ./$(ls -d */|grep musl)/release/silly-cors /output
 
 
-FROM scratch
+FROM gcr.io/distroless/static
 WORKDIR /app
 COPY --from=build /output/silly-cors .
 
