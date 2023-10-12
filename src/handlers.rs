@@ -45,7 +45,10 @@ pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Respo
         .ok_or_else(|| HandlerError::new_with_origin("sowwy, you might have fowgotten host in your destination", StatusCode::BAD_REQUEST, origin.clone()))?;
 
 
-    req.headers_mut().insert("Host", HeaderValue::from_str(destination_host.as_str()).unwrap());
+    let cors_host = req.headers_mut()
+        .insert("Host", HeaderValue::from_str(destination_host.as_str()).unwrap())
+        .ok_or_else(|| HandlerError::new_with_origin("sowwy, you might have fowgotten host headew", StatusCode::BAD_REQUEST, origin.clone()))?;
+    
     *req.uri_mut() = destination_uri;
 
     let client_response = GLOBAL_CLIENT.request(req).await
@@ -54,6 +57,10 @@ pub async fn handle(mut req: Request<Body>, origin: HeaderValue) -> Result<Respo
 
     let (mut parts, body) = client_response.into_parts();
     parts.headers.extend(get_default_cors(origin.clone()));
+
+    if let Some(location) = parts.headers.get_mut("Location") {
+        *location = HeaderValue::from_str(format!("https://{}/{}", cors_host.to_str()?, location.to_str()?).as_str())?;
+    }
 
     return Ok(Response::from_parts(parts, body));
 }
